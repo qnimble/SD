@@ -24,6 +24,7 @@
 #define __SD_H__
 
 #include <Arduino.h>
+#include <FS.h>
 #include <SdFat.h>
 #if !defined(SD_FAT_TEENSY_MODIFIED)
 #error "Teensy's SD library uses a custom modified copy of SdFat.  Standard SdFat was mistakenly used.  Arduino should print multiple libraries found for SdFat.h.  To resolve this error, you will need to move or delete the copy Arduino is using, or otherwise take steps to cause Teensy's special copy of SdFat to be used."
@@ -35,7 +36,7 @@
 #if defined(FILE_WRITE) && !defined(FS_H)
 #undef FILE_WRITE
 #endif
-#include <FS.h>
+
 
 #if defined(__MK64FX512__) || defined(__MK66FX1M0__) || defined(__IMXRT1062__)
 #define BUILTIN_SDCARD 254
