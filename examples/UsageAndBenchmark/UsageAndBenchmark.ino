@@ -6,20 +6,32 @@
 #define SEQBUFFSTOREAD 8192   // 32MByte file size for sequential read
 
 // Define error function to print argument and SD card errors to Serial 
-#define error(s) sd.errorHalt(&Serial, F(s))
+
 
 SdFs sd; 
 FsFile file;
 FsFile root;
 
+IntervalTimer checkSerialReady;
+
 void setup() {
-  // Wait for USB Serial
-  while (!Serial) {
-    yield();    
-  }
-    
-  Serial.println("Insert SD card and type any character to start");  
+  checkSerialReady.begin(checkSerial,100); //check every 100us for serial being reay
 }
+
+void checkSerial() {
+  if (Serial) {
+    Serial.println("Insert SD card and type any character to start");
+    checkSerialReady.end(); //Serial ready, so stop checking
+  }
+}
+
+void error(const char* message) {
+  sd.errorPrint(&Serial);
+  Serial.println(message);
+  Serial.println("There was an error reading the SD card. Please check that SD card is properly formatted and inserted. Press any key to try again");
+}
+//#define error(s) sd.errorHalt(&Serial, F(s))
+
 
 void loop() {
   static unsigned long lastrun = 0;    
@@ -34,10 +46,13 @@ void loop() {
   if (Serial.available()) {
   
     Serial.read(); // Read byte from serial buffer so empty for next loop
-    
+    Serial.write(8); //print backspace to move back typed character if echoing commands
+    Serial.write(32); //print space to clear content
+    Serial.write(8); //print backspace to move back
     //sd.begin initializes the SD card
     if (!sd.begin(SdioConfig(FIFO_SDIO))) {
-      sd.initErrorHalt(&Serial);
+      error("Error initializing SD card");
+      return;
     }
   
     ReadWriteSDCard(); //Do List files, Read/Write files, create directories, etc
@@ -48,6 +63,7 @@ void loop() {
     
     if (!sd.remove(fname)) { //delete benchmark file when done
       error("Error deleting test benchmark file");
+      return;
     }
     Serial.println("SD Tests Complete. Press a key to run them again")  ;
   }
@@ -85,6 +101,7 @@ void ReadWriteSDCard(void) {
   // Create a new folder.
   if (!sd.mkdir("Folder1")) {
     error("Create Folder1 failed");
+    return;
   }
   Serial.println("Created Folder1");
 
