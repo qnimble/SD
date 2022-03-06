@@ -5,9 +5,6 @@
 #define BUFFSTOREAD 2048   // 8MByte file size for random read
 #define SEQBUFFSTOREAD 8192   // 32MByte file size for sequential read
 
-// Define error function to print argument and SD card errors to Serial 
-
-
 SdFs sd; 
 FsFile file;
 FsFile root;
@@ -15,7 +12,7 @@ FsFile root;
 IntervalTimer checkSerialReady;
 
 void setup() {
-  checkSerialReady.begin(checkSerial,100); //check every 100us for serial being reay
+  checkSerialReady.begin(checkSerial,100); //check every 100us for serial being ready
 }
 
 void checkSerial() {
@@ -28,10 +25,8 @@ void checkSerial() {
 void error(const char* message) {
   sd.errorPrint(&Serial);
   Serial.println(message);
-  Serial.println("There was an error reading the SD card. Please check that SD card is properly formatted and inserted. Press any key to try again");
+  Serial.println("There was an error reading the SD card. Please check that SD card is properly formatted and inserted. Press enter to try again");
 }
-//#define error(s) sd.errorHalt(&Serial, F(s))
-
 
 void loop() {
   static unsigned long lastrun = 0;    
@@ -44,12 +39,15 @@ void loop() {
 
   //If key pressed, start the test
   if (Serial.available()) {
-  
-    Serial.read(); // Read byte from serial buffer so empty for next loop
-    Serial.write(8); //print backspace to move back typed character if echoing commands
-    Serial.write(32); //print space to clear content
-    Serial.write(8); //print backspace to move back
-    //sd.begin initializes the SD card
+    if ( Serial.read() != '\n') {
+      //do nothing if not enter
+      return;
+    };
+
+    while (Serial.available()) {
+      Serial.read(); // clear input characters after enter, so we do not queue up runs on top of each other
+    }
+
     if (!sd.begin(SdioConfig(FIFO_SDIO))) {
       error("Error initializing SD card");
       return;
@@ -65,14 +63,12 @@ void loop() {
       error("Error deleting test benchmark file");
       return;
     }
-    Serial.println("SD Tests Complete. Press a key to run them again")  ;
+    Serial.println("SD Tests Complete. Press enter to run them again")  ;
   }
 }
 
 
 void ReadWriteSDCard(void) {
-  
-
   if (sd.exists("Folder1")
     || sd.exists("Folder1/file1.txt")
     || sd.exists("Folder1/File2.txt")) {
