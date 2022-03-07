@@ -39,8 +39,8 @@ void loop() {
 
   //If key pressed, start the test
   if (Serial.available()) {
-    if ( Serial.read() != '\n') {
-      //do nothing if not enter
+    if ( Serial.read() != 0x0D) {
+      //do nothing if key was not enter
       return;
     };
 
@@ -66,7 +66,6 @@ void loop() {
     Serial.println("SD Tests Complete. Press enter to run them again")  ;
   }
 }
-
 
 void ReadWriteSDCard(void) {
   if (sd.exists("Folder1")
