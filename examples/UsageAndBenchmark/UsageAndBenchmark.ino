@@ -39,13 +39,14 @@ void loop() {
 
   //If key pressed, start the test
   if (Serial.available()) {
-    if ( Serial.read() != 0x0D) {
+    char tempChar = Serial.read();
+    if (( tempChar != 0x0D) && (tempChar != 0x0A) ) {
       //do nothing if key was not enter
       return;
     };
 
     while (Serial.available()) {
-      Serial.read(); // clear input characters after enter, so we do not queue up runs on top of each other
+      Serial.read(); // clear remaining input characters after enter, so we do not queue up runs on top of each other, especially if CRLF sent
     }
 
     if (!sd.begin(SdioConfig(FIFO_SDIO))) {
