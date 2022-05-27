@@ -1,5 +1,4 @@
 #include "SdFat.h"
-#include "TimeLib.h"
 
 SdFs sd;
 char filename[] = "Data.dat";
@@ -50,7 +49,7 @@ void writeFile(void) {
   static uint count = 1;
   file = sd.open(filename,O_RDWR |  O_CREAT | O_APPEND);
   if (file)  {
-    uint nowTime = (uint) now();
+    uint nowTime =  rtc_get();
     uint charsWritten = sprintf(message,"%u Write number %u\n",nowTime,count); //Prepare string to write to file
     count++; //keep track of how many times we have written to the file
     file.write(message,charsWritten); //write to file
